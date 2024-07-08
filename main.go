@@ -16,6 +16,11 @@ type Node struct {
 	Name string `json:"name"`
 }
 
+type Pod struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+}
+
 func getNodeList(clientset *kubernetes.Clientset) ([]Node, error) {
 	nodeList, err := clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
@@ -27,6 +32,19 @@ func getNodeList(clientset *kubernetes.Clientset) ([]Node, error) {
 		nodes[i] = Node{Name: n.Name}
 	}
 	return nodes, nil
+}
+
+func getPodList(clientset *kubernetes.Clientset) ([]Pod, error) {
+	podList, err := clientset.CoreV1().Pods("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	pods := make([]Pod, len(podList.Items))
+	for i, p := range podList.Items {
+		pods[i] = Pod{Name: p.Name, Namespace: p.Namespace}
+	}
+	return pods, nil
 }
 
 func main() {
@@ -46,6 +64,16 @@ func main() {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(nodes)
+	})
+
+	http.HandleFunc("/pods", func(w http.ResponseWriter, r *http.Request) {
+		pods, err := getPodList(clientset)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(pods)
 	})
 
 	// Serve the index.html file

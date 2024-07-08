@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Node List</title>
+    <title>Cluster Resources</title>
     <script>
         async function fetchNodes() {
             const response = await fetch('/nodes');
@@ -14,11 +14,30 @@
                 nodeListElement.appendChild(listItem);
             });
         }
-        window.onload = fetchNodes;
+
+        async function fetchPods() {
+            const response = await fetch('/pods');
+            const pods = await response.json();
+            const podListElement = document.getElementById('pod-list');
+            podListElement.innerHTML = ''; // Clear any existing content
+            pods.forEach(pod => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Name: ${pod.name}, Namespace: ${pod.namespace}`;
+                podListElement.appendChild(listItem);
+            });
+        }
+
+        window.onload = () => {
+            fetchNodes();
+            fetchPods();
+        }
     </script>
 </head>
 <body>
     <h1>Nodes in the Cluster</h1>
     <ul id="node-list"></ul>
+
+    <h1>Pods in the Cluster</h1>
+    <ul id="pod-list"></ul>
 </body>
 </html>
