@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"sort"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -44,6 +45,15 @@ func getPodList(clientset *kubernetes.Clientset) ([]Pod, error) {
 	for i, p := range podList.Items {
 		pods[i] = Pod{Name: p.Name, Namespace: p.Namespace}
 	}
+
+	// Sort pods by namespace
+	sort.Slice(pods, func(i, j int) bool {
+		if pods[i].Namespace == pods[j].Namespace {
+			return pods[i].Name < pods[j].Name
+		}
+		return pods[i].Namespace < pods[j].Namespace
+	})
+
 	return pods, nil
 }
 
