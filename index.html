@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Node List</title>
+    <script>
+        async function fetchNodes() {
+            const response = await fetch('/nodes');
+            const nodes = await response.json();
+            const nodeListElement = document.getElementById('node-list');
+            nodeListElement.innerHTML = ''; // Clear any existing content
+            nodes.forEach(node => {
+                const listItem = document.createElement('li');
+                listItem.textContent = node.name;
+                nodeListElement.appendChild(listItem);
+            });
+        }
+        window.onload = fetchNodes;
+    </script>
+</head>
+<body>
+    <h1>Nodes in the Cluster</h1>
+    <ul id="node-list"></ul>
+</body>
+</html>
